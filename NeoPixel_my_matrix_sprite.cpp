@@ -24,14 +24,26 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
 
 // --------------------------------------------  
 // Set the color of animation (see Definitions.h)
-uint16_t COLOR = BISQUE;
-// Set the brightness
-int brigh = 30;
+unsigned long COLOR = RED;
+unsigned long COLOR2 = GOLD;
+
+// Set the brightness (max 50)
+int brigh = 40;
 // Delay between animation
-int wait = 300;
+int wait = 500;
 // ---------------------------------------------
 
 // See http://blog.riyas.org/2013/12/online-led-matrix-font-generator-with.html
+
+static unsigned char PROGMEM cuore1[] =
+{B00000000,
+B01100110,
+B11111111,
+B11111111,
+B11111111,
+B01111110,
+B00111100,
+B00011000};
 
 static unsigned char PROGMEM alienoa1[] =
 {B01000010,
@@ -145,8 +157,8 @@ B00111000};
 
 void setup() {
   matrix.begin();
+  matrix.show();
   matrix.setBrightness(brigh);
-  matrix.fillScreen(0);
 }
 
 
@@ -167,8 +179,12 @@ void loop() {
  sprite(navicella4,COLOR,wait); 
 }
 
-void sprite(const uint8_t* x, uint16_t y, int w){
- matrix.drawBitmap(0,0, x, 8, 8, y);
+void sprite(const uint8_t* x, unsigned long y, int w){
+ byte red = (y & 0xFF0000) >> 16;
+ byte green = ( y & 0x00FF00) >> 8;
+ byte blue = (y & 0x0000FF);
+ 
+ matrix.drawBitmap(0,0, x, 8, 8, matrix.Color(red, green, blue));
  matrix.show();
  delay(w);
  matrix.fillScreen(0);

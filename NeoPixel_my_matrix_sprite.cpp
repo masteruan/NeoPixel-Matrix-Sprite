@@ -13,6 +13,7 @@
  #define PSTR // Make Arduino Due happy
 #endif
 #include "Definitions.h"
+#include "Shape.h"
 
 // Control PIN
 #define PIN 6
@@ -24,168 +25,152 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
 
 // --------------------------------------------  
 // Set the color of animation (see Definitions.h)
-unsigned long COLOR = RED;
-unsigned long COLOR2 = GOLD;
-
+const uint16_t colors[] = { matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
 // Set the brightness (max 50)
 int brigh = 40;
 // Delay between animation
-int wait = 500;
+int wait = 300;
 // ---------------------------------------------
-
-// See http://blog.riyas.org/2013/12/online-led-matrix-font-generator-with.html
-
-static unsigned char PROGMEM cuore1[] =
-{B00000000,
-B01100110,
-B11111111,
-B11111111,
-B11111111,
-B01111110,
-B00111100,
-B00011000};
-
-static unsigned char PROGMEM alienoa1[] =
-{B01000010,
-B00100100,
-B01111110,
-B11011011,
-B11111111,
-B01000010,
-B01100110,
-B00000000};
-
-static unsigned char PROGMEM alienoa2[] =
-{B01000010,
-B00100100,
-B10111101,
-B11011011,
-B01111110,
-B01000010,
-B11000011,
-B00000000};
-
-static unsigned char PROGMEM alienob1[] =
-{B00011000,
-B01111110,
-B11111111,
-B11111111,
-B10011001,
-B11111111,
-B01100110,
-B11011011};
-
-static unsigned char PROGMEM alienob2[] =
-{B00011000,
-B01111110,
-B11111111,
-B11111111,
-B10011001,
-B11111111,
-B01100110,
-B01101101};
-
-static unsigned char PROGMEM alienoc1[] =
-{B00011000,
-B00111100,
-B01111110,
-B11111111,
-B11011011,
-B01111110,
-B00100100,
-B01011010};
-
-static unsigned char PROGMEM alienoc2[] =
-{B00011000,
-B00111100,
-B01111110,
-B11111111,
-B11011011,
-B01111110,
-B01011010,
-B10100101};
-
-static unsigned char PROGMEM navicella1[] =
-{B00000000,
-B00000000,
-B00000000,
-B00000000,
-B01000000,
-B00000000,
-B01000000,
-B11100000};
-
-static unsigned char PROGMEM navicella2[] =
-{B00000000,
-B00000000,
-B00000000,
-B01000000,
-B00010000,
-B00000000,
-B00010000,
-B00111000};
-
-static unsigned char PROGMEM navicella3[] =
-{B00000000,
-B00000000,
-B01000000,
-B00010000,
-B00000010,
-B00000000,
-B00000010,
-B00000111};
-
-static unsigned char PROGMEM navicella4[] =
-{B00000000,
-B01000000,
-B00010000,
-B00000010,
-B00000000,
-B00000000,
-B00001000,
-B00011100};
-
-static unsigned char PROGMEM navicella5[] =
-{B01000000,
-B00010000,
-B00000010,
-B00000000,
-B00000000,
-B00000000,
-B00010000,
-B00111000};
 
 void setup() {
   matrix.begin();
-  matrix.show();
+  matrix.setTextWrap(false);
   matrix.setBrightness(brigh);
 }
 
+// Variable to print text
+int x = matrix.width();
+int pass = 0;
 
 void loop() {
+// Set the color of text (see Definitions.h)
+//  scrivi("Ciao Amoremiobello", MAGENTA);
 
- sprite(alienoa1,COLOR,wait);
- sprite(alienoa2,COLOR,wait);
- sprite(alienoa1,COLOR,wait);
- sprite(alienob1,COLOR,wait);
- sprite(alienob2,COLOR,wait);
- sprite(alienob1,COLOR,wait);
- sprite(alienoc1,COLOR,wait);
- sprite(alienoc2,COLOR,wait);
- sprite(alienoc1,COLOR,wait);
- sprite(navicella1,COLOR,wait);
- sprite(navicella2,COLOR,wait);
- sprite(navicella3,COLOR,wait);
- sprite(navicella4,COLOR,wait); 
+// Text change color
+//  scriviColor("Ciao");
+
+// Set the animation
+  battito();
+  pacman();
+  space();
+  heart();
 }
 
 void sprite(const uint8_t* x, unsigned long y, int w){
- byte red = (y & 0xFF0000) >> 16;
- byte green = ( y & 0x00FF00) >> 8;
- byte blue = (y & 0x0000FF);
- 
- matrix.drawBitmap(0,0, x, 8, 8, matrix.Color(red, green, blue));
- matrix.show();
- delay(w);
- matrix.fillScreen(0);
+  byte red = (y & 0xFF0000) >> 16;
+  byte green = ( y & 0x00FF00) >> 8;
+  byte blue = (y & 0x0000FF);
+  matrix.drawBitmap(0,0, x, 8, 8, matrix.Color(red, green, blue));
+  matrix.show();
+  delay(w);
+  matrix.fillScreen(0);
 }
+
+void scrivi(String z, unsigned long y) {
+  int len = z.length();
+  matrix.fillScreen(0);
+  matrix.setCursor(x, 0);
+  byte red = (y & 0xFF0000) >> 16;
+  byte green = ( y & 0x00FF00) >> 8;
+  byte blue = (y & 0x0000FF);
+  matrix.print(z);
+  if(--x < -len*6) {
+    x = matrix.width();
+  }
+  matrix.setTextColor(matrix.Color(red,green,blue));
+  matrix.show();
+  delay(100);
+}
+
+void scriviColor(String y) {
+  int len = y.length();
+  matrix.fillScreen(0);
+  matrix.setCursor(x, 0); 
+  matrix.print(y);
+  //matrix.print(F("Scrivi"));
+  if(--x < -len*6) {
+    x = matrix.width();
+    if(++pass >= 3) pass = 0;
+    matrix.setTextColor(colors[pass]);
+  }
+  matrix.show();
+  delay(100);
+}
+
+ // ---Animation---
+ void heart() {
+   sprite(cuore1,RED,wait);
+   sprite(cuore1,PINK,wait);
+   sprite(cuore1,BLUE,wait);
+   sprite(cuore1,MAGENTA,wait);
+ }
+ void space() {
+   unsigned long COLOR = RED;
+   sprite(alienoa1,BLUE,wait);
+   sprite(alienoa2,BLUE,wait);
+   sprite(alienoa1,BLUE,wait);
+   sprite(alienob1,COLOR,wait);
+   sprite(alienob2,COLOR,wait);
+   sprite(alienob1,COLOR,wait);
+   sprite(alienoc1,VIOLET,wait);
+   sprite(alienoc2,VIOLET,wait);
+   sprite(alienoc1,VIOLET,wait);
+   sprite(navicella1,COLOR,wait);
+   sprite(navicella2,COLOR,wait);
+   sprite(navicella3,COLOR,wait);
+   sprite(navicella4,COLOR,wait);
+ }
+ void pacman() {
+   sprite(pacman1,YELLOW,wait);
+   sprite(pacman2,YELLOW,wait);
+   sprite(pacman1,YELLOW,wait);
+   sprite(pacman2,YELLOW,wait); 
+   sprite(pacman3,YELLOW,wait);
+   sprite(pacman4,YELLOW,wait); 
+   sprite(pacman5,YELLOW,wait); 
+   sprite(pacman1,YELLOW,wait); 
+   sprite(pacman2,YELLOW,wait); 
+   sprite(pacman1,YELLOW,wait);
+   sprite(pacman3,YELLOW,wait);
+   sprite(gost4,RED,wait);
+   sprite(gost5,RED,wait);
+   sprite(gost1,RED,wait);
+   sprite(gost2,RED,wait);
+   sprite(gost3,RED,wait);
+   sprite(gost4,HOTPINK,wait);
+   sprite(gost5,HOTPINK,wait); 
+   sprite(gost1,HOTPINK,wait);
+   sprite(gost2,HOTPINK,wait);
+   sprite(gost3,HOTPINK,wait);
+   sprite(gost4,ORANGE,wait);
+   sprite(gost5,ORANGE,wait); 
+   sprite(gost1,ORANGE,wait);
+   sprite(gost2,ORANGE,wait);
+   sprite(gost3,ORANGE,wait);
+   sprite(gost4,AQUA,wait);
+   sprite(gost5,AQUA,wait);
+   sprite(gost1,AQUA,wait);
+   sprite(gost2,AQUA,wait); 
+   sprite(gost3,AQUA,wait);
+   sprite(pacman1,YELLOW,wait);
+   sprite(pacman2,YELLOW,wait);
+   sprite(pacman1,YELLOW,wait);
+   sprite(pacman2,YELLOW,wait); 
+   sprite(pacman3,YELLOW,wait);
+   sprite(pacman4,YELLOW,wait); 
+   sprite(pacman5,YELLOW,wait); 
+   sprite(pacman1,YELLOW,wait); 
+   sprite(pacman2,YELLOW,wait); 
+   sprite(pacman1,YELLOW,wait);
+   sprite(pacman3,YELLOW,wait);
+ }
+ void battito() {
+   sprite(cuore1,RED,400);
+   sprite(cuore2,RED,200);
+   sprite(cuore3,RED,100);
+   sprite(cuore2,RED,200);
+   sprite(cuore1,RED,400);   
+   sprite(cuore2,RED,200);
+   sprite(cuore3,RED,100);
+   sprite(cuore2,RED,200);
+ }
